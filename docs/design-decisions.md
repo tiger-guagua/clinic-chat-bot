@@ -1,8 +1,8 @@
 # Design Decisions
 
-A record of the decisions made while designing and building this MVP, with the reasoning
-and the alternatives that were rejected. Architecture details live in
-[architecture.md](architecture.md); this file records *why* things are the way they are.
+Every non-obvious choice in this MVP, with its reasoning and the alternatives that were
+rejected. [architecture.md](architecture.md) describes what was built; this file records
+why.
 
 ## Domain language
 

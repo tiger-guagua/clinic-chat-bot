@@ -114,8 +114,8 @@ Short version (full steps in [docs/clinic-guide.md](docs/clinic-guide.md)):
 2. Create an OAuth client (type **Web application**) with redirect URI
    `http://localhost:3000/auth/google/callback`.
 3. Keep the consent screen in **Testing** mode and add the calendar-owner account as a
-   **test user**. Note: Testing-mode refresh tokens expire after 7 days — re-run the
-   token helper if calendar access stops working.
+   **test user**. Testing-mode refresh tokens expire after 7 days; re-run the token
+   helper if calendar access stops working.
 4. Put the client ID/secret and the calendar IDs into `.env`.
 5. Run `npx tsx scripts/get-google-refresh-token.ts` and sign in. The refresh token is
    written into `.env` automatically.

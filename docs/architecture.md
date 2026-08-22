@@ -1,7 +1,9 @@
 # Architecture, Cost, and Safety
 
-Internal documentation for engineers and reviewers. For clinic operators, see
-[clinic-guide.md](clinic-guide.md).
+One Node.js process serves the frontend, the API, and every business rule — and the AI
+is never trusted with booking correctness. This document explains how, why, what it
+costs, and where the limits are. Clinic operators should read
+[clinic-guide.md](clinic-guide.md) instead.
 
 ## 1. Architecture
 
