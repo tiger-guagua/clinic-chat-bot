@@ -194,4 +194,5 @@ monitoring, cancellation/rescheduling, notifications.
 ## Documentation
 
 - [docs/architecture.md](docs/architecture.md) — internal: architecture, cost, safety
+- [docs/design-decisions.md](docs/design-decisions.md) — decision log: what was chosen, why, and what was rejected
 - [docs/clinic-guide.md](docs/clinic-guide.md) — external: clinic installation and usage
