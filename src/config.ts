@@ -131,6 +131,37 @@ export function loadCalendarConfig(env: NodeJS.ProcessEnv = process.env): Calend
   };
 }
 
+const aiEnvSchema = z.object({
+  OPENAI_API_KEY: z.string().min(1),
+  OPENAI_CHAT_MODEL: z.string().min(1).default('gpt-4o-mini'),
+  OPENAI_STT_MODEL: z.string().min(1).default('whisper-1'),
+  OPENAI_TTS_MODEL: z.string().min(1).default('tts-1'),
+});
+
+export interface AIConfig {
+  apiKey: string;
+  chatModel: string;
+  sttModel: string;
+  ttsModel: string;
+}
+
+export function loadAIConfig(env: NodeJS.ProcessEnv = process.env): AIConfig {
+  // Empty-string env values must count as missing, not as valid keys.
+  const cleaned = { ...env };
+  if (cleaned.OPENAI_API_KEY === '') delete cleaned.OPENAI_API_KEY;
+
+  const parsed = aiEnvSchema.safeParse(cleaned);
+  if (!parsed.success) {
+    throw new ConfigError('Set OPENAI_API_KEY in .env (get one at https://platform.openai.com/api-keys).');
+  }
+  return {
+    apiKey: parsed.data.OPENAI_API_KEY,
+    chatModel: parsed.data.OPENAI_CHAT_MODEL,
+    sttModel: parsed.data.OPENAI_STT_MODEL,
+    ttsModel: parsed.data.OPENAI_TTS_MODEL,
+  };
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const parsed = envSchema.safeParse(env);
   if (!parsed.success) {
