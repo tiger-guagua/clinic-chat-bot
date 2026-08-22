@@ -7,4 +7,5 @@ github-pat.txt
 googleOAuth.json
 googleAPIkey.txt
 outlookAPIkey.txt
+openAIkey.txt
 *.log
