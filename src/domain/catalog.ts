@@ -51,12 +51,13 @@ export const PROFESSIONALS: Record<ProfessionalId, Professional> = {
   },
 };
 
+// IDs arrive from the LLM, which mixes case ("Junior", "c"); normalize before lookup.
 export function getService(serviceId: string): Service | undefined {
-  return (SERVICES as Record<string, Service | undefined>)[serviceId];
+  return (SERVICES as Record<string, Service | undefined>)[serviceId.trim().toUpperCase()];
 }
 
 export function getProfessional(professionalId: string): Professional | undefined {
-  return (PROFESSIONALS as Record<string, Professional | undefined>)[professionalId];
+  return (PROFESSIONALS as Record<string, Professional | undefined>)[professionalId.trim().toLowerCase()];
 }
 
 export function isEligible(service: Service, professionalId: ProfessionalId): boolean {

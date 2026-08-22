@@ -203,6 +203,18 @@ describe('BookingService.bookAppointment', () => {
     );
   });
 
+  it('normalizes model-supplied id casing ("a", "Junior")', async () => {
+    const { service, fakes } = createHarness();
+
+    const confirmation = await service.bookAppointment(
+      baseBooking({ serviceId: 'a', professionalId: 'Junior' }),
+    );
+
+    expect(confirmation.serviceId).toBe('A');
+    expect(confirmation.professionalId).toBe('junior');
+    expect(fakes.junior.createdEvents).toHaveLength(1);
+  });
+
   it('rejects an unknown professional', async () => {
     const { service } = createHarness();
 
