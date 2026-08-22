@@ -1,12 +1,16 @@
 import 'dotenv/config';
 import path from 'node:path';
 import express from 'express';
-import { ConfigError, loadConfig } from './config';
+import { BookingService } from './booking/BookingService';
+import { buildProfessionalCalendars } from './calendar/registry';
+import { ConfigError, loadCalendarConfig, loadConfig } from './config';
 
 function main(): void {
   let config;
+  let calendars;
   try {
     config = loadConfig();
+    calendars = buildProfessionalCalendars(loadCalendarConfig());
   } catch (error) {
     if (error instanceof ConfigError) {
       console.error(error.message);
@@ -15,7 +19,10 @@ function main(): void {
     throw error;
   }
 
+  const bookingService = new BookingService(calendars, config);
+
   const app = express();
+  app.locals.bookingService = bookingService;
 
   app.use(express.json({ limit: '100kb' }));
   app.use(express.static(path.join(__dirname, '..', 'public')));

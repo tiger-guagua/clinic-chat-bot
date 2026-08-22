@@ -72,6 +72,65 @@ function parseClosedWeekdays(raw: string): Weekday[] {
   return entries as Weekday[];
 }
 
+const calendarEnvSchema = z.object({
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_REFRESH_TOKEN: z.string().min(1),
+  GOOGLE_CALENDAR_JUNIOR: z.string().min(1),
+  GOOGLE_CALENDAR_SENIOR1: z.string().min(1),
+  MICROSOFT_CLIENT_ID: z.string().min(1),
+  MICROSOFT_CLIENT_SECRET: z.string().min(1),
+  MICROSOFT_REFRESH_TOKEN: z.string().min(1),
+  // Empty means the signed-in Microsoft account's default calendar.
+  MICROSOFT_CALENDAR_SENIOR2: z.string().optional().default(''),
+});
+
+export interface CalendarConfig {
+  google: {
+    clientId: string;
+    clientSecret: string;
+    refreshToken: string;
+    calendarJunior: string;
+    calendarSenior1: string;
+  };
+  microsoft: {
+    clientId: string;
+    clientSecret: string;
+    refreshToken: string;
+    calendarSenior2: string;
+  };
+}
+
+export function loadCalendarConfig(env: NodeJS.ProcessEnv = process.env): CalendarConfig {
+  const parsed = calendarEnvSchema.safeParse(env);
+  if (!parsed.success) {
+    const missing = parsed.error.issues.map((issue) => issue.path.join('.'));
+    throw new ConfigError(
+      `Missing or invalid calendar configuration: ${missing.join(', ')}\n` +
+        'Set these variables in .env. To mint the refresh tokens run:\n' +
+        '  npx tsx scripts/get-google-refresh-token.ts\n' +
+        '  npx tsx scripts/get-microsoft-refresh-token.ts',
+    );
+  }
+
+  const raw = parsed.data;
+  return {
+    google: {
+      clientId: raw.GOOGLE_CLIENT_ID,
+      clientSecret: raw.GOOGLE_CLIENT_SECRET,
+      refreshToken: raw.GOOGLE_REFRESH_TOKEN,
+      calendarJunior: raw.GOOGLE_CALENDAR_JUNIOR,
+      calendarSenior1: raw.GOOGLE_CALENDAR_SENIOR1,
+    },
+    microsoft: {
+      clientId: raw.MICROSOFT_CLIENT_ID,
+      clientSecret: raw.MICROSOFT_CLIENT_SECRET,
+      refreshToken: raw.MICROSOFT_REFRESH_TOKEN,
+      calendarSenior2: raw.MICROSOFT_CALENDAR_SENIOR2,
+    },
+  };
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const parsed = envSchema.safeParse(env);
   if (!parsed.success) {
