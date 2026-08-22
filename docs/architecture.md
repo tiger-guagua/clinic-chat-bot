@@ -131,9 +131,22 @@ AI total                                             ~ $5.04 / month
 + hosting ($5-20)                                    ~ $10-25 / month total
 ```
 
-Build cost: this MVP was built in roughly one working day with AI assistance. Maintenance
-in production is dominated by dependency updates and credential rotation (Google/Microsoft
-client secrets and OpenAI keys expire or get rotated), not by feature code.
+### Build cost (measured for this project)
+
+This MVP was designed and built in roughly one working day using an AI coding assistant.
+Actual out-of-pocket costs for the build session:
+
+| Item | Approx. cost (USD) |
+|---|---|
+| AI coding-assistant usage (design interview + 9 phases + live testing) | ~$45 |
+| OpenAI API spend during live testing (~12 chat calls, 2 transcriptions, 2 TTS) | < $0.10 |
+| OpenAI minimum credit purchase (mostly unused, funds future demos) | $5 |
+| Google Cloud / Microsoft Azure | $0 (free tiers) |
+| **Total** | **~$50** |
+
+Engineer time is excluded. Maintenance in production is dominated by dependency updates
+and credential rotation (Google/Microsoft client secrets and OpenAI keys expire or get
+rotated), not by feature code.
 
 ## 4. Safety and security
 
