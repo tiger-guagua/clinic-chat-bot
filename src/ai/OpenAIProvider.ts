@@ -83,6 +83,12 @@ export class OpenAIProvider implements AIProvider {
       file: await toFile(audio.data, audio.filename, { type: audio.mimeType }),
       model: this.config.sttModel,
       language: 'en',
+      // Biases recognition toward the clinic vocabulary (service letters are
+      // otherwise often misheard, e.g. "service A" -> "service day").
+      prompt:
+        'Dental clinic appointment scheduling. Service A, Service B, Service C, ' +
+        'Service D, Service E. Junior, Senior 1, Senior 2. Book an appointment, ' +
+        'available slots, tomorrow.',
     });
     return transcription.text;
   }

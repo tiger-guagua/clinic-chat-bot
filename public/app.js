@@ -212,7 +212,9 @@
           showError('No speech detected. Please try again.');
           return;
         }
-        sendUserMessage(trimmed);
+        // Transcription is imperfect: let the user review and edit before sending.
+        messageInput.value = trimmed;
+        messageInput.focus();
       })
       .catch(function (error) {
         showError(error.message);
