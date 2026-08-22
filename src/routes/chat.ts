@@ -28,7 +28,7 @@ export function createChatRouter(conversationService: ConversationService): Rout
         return;
       }
 
-      const requestId = Math.random().toString(36).slice(2, 10);
+      const requestId = String(res.locals.requestId ?? 'unknown');
       console.info(
         JSON.stringify({
           event: 'chat_request',

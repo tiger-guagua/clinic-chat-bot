@@ -21,6 +21,41 @@
     return bubble;
   }
 
+  function addSpeakButton(bubble) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'speak-button';
+    button.textContent = '\u{1F50A}';
+    button.title = 'Play this reply aloud';
+    button.addEventListener('click', function () {
+      button.disabled = true;
+      fetch('/api/speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // TTS input is capped server-side at 500 characters.
+        body: JSON.stringify({ text: bubble.textContent.slice(0, 500) }),
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error('Speech playback is unavailable.');
+          }
+          return response.blob();
+        })
+        .then(function (blob) {
+          const audio = new Audio(URL.createObjectURL(blob));
+          audio.addEventListener('ended', function () {
+            button.disabled = false;
+          });
+          return audio.play();
+        })
+        .catch(function (error) {
+          button.disabled = false;
+          showError(error.message);
+        });
+    });
+    bubble.appendChild(button);
+  }
+
   function showError(text) {
     errorBox.textContent = text;
     errorBox.hidden = false;
@@ -82,6 +117,7 @@
       .then(function (reply) {
         pending.textContent = reply;
         messages.push({ role: 'assistant', content: reply });
+        addSpeakButton(pending);
       })
       .catch(function (error) {
         pending.remove();
