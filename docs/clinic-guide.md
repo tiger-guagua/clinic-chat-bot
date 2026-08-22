@@ -157,9 +157,11 @@ events (holidays, meetings), the assistant automatically stops offering those ti
 
 **Calendar access failure** (`[FAIL]` from the verify script, or "calendar service is
 unavailable" in chat): the saved token may have expired or been revoked. Run the two
-token commands from section 7 step 3 again. Also check that the Calendar API is still
-enabled (Google) and the client secret has not expired (Microsoft secrets expire after
-6-24 months).
+token commands from section 7 step 3 again. Note: while the Google consent screen is in
+**Testing** mode, Google refresh tokens expire after **7 days** — re-run the Google token
+command before any demo if more than a week has passed. Also check that the Calendar API
+is still enabled (Google) and the client secret has not expired (Microsoft secrets expire
+after 6-24 months).
 
 **No available slots**: check that the date is not a closed weekday, that the calendars
 are not fully booked, and that the service duration fits before closing time (service E
