@@ -6,6 +6,7 @@
   const chatForm = document.getElementById('chat-form');
   const messageInput = document.getElementById('message-input');
   const sendButton = document.getElementById('send-button');
+  const talkButton = document.getElementById('talk-button');
 
   // The browser owns the conversation history and sends it with every request.
   const messages = [];
@@ -64,14 +65,8 @@
       'Ask me about our services or availability.'
   );
 
-  chatForm.addEventListener('submit', function (event) {
-    event.preventDefault();
-    if (sending) {
-      return;
-    }
-
-    const text = messageInput.value.trim();
-    if (text.length === 0) {
+  function sendUserMessage(text) {
+    if (sending || text.length === 0) {
       return;
     }
 
@@ -98,5 +93,114 @@
         setSending(false);
         messageInput.focus();
       });
+  }
+
+  chatForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    sendUserMessage(messageInput.value.trim());
   });
+
+  // --- Push-to-talk: hold to record, release to transcribe and send. ---
+
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let recording = false;
+
+  function setTalkState(label, active) {
+    talkButton.textContent = label;
+    talkButton.classList.toggle('recording', active);
+  }
+
+  async function startRecording() {
+    if (recording || sending) {
+      return;
+    }
+    clearError();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.addEventListener('dataavailable', function (event) {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
+      });
+      mediaRecorder.addEventListener('stop', function () {
+        stream.getTracks().forEach(function (track) {
+          track.stop();
+        });
+        transcribeAndSend();
+      });
+      mediaRecorder.start();
+      recording = true;
+      setTalkState('Recording... release to send', true);
+    } catch (error) {
+      showError('Microphone access failed: ' + error.message);
+    }
+  }
+
+  function stopRecording() {
+    if (!recording || !mediaRecorder) {
+      return;
+    }
+    recording = false;
+    setTalkState('Transcribing...', false);
+    mediaRecorder.stop();
+  }
+
+  function transcribeAndSend() {
+    const blob = new Blob(audioChunks, {
+      type: mediaRecorder.mimeType || 'audio/webm',
+    });
+    audioChunks = [];
+    if (blob.size === 0) {
+      setTalkState('Hold to talk', false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('audio', blob, 'recording.webm');
+
+    fetch('/api/transcribe', { method: 'POST', body: formData })
+      .then(function (response) {
+        return response.json().then(function (body) {
+          if (!response.ok) {
+            throw new Error(body && body.message ? body.message : 'Transcription failed.');
+          }
+          return body.text;
+        });
+      })
+      .then(function (text) {
+        const trimmed = (text || '').trim();
+        if (trimmed.length === 0) {
+          showError('No speech detected. Please try again.');
+          return;
+        }
+        sendUserMessage(trimmed);
+      })
+      .catch(function (error) {
+        showError(error.message);
+      })
+      .finally(function () {
+        setTalkState('Hold to talk', false);
+      });
+  }
+
+  if (navigator.mediaDevices && window.MediaRecorder) {
+    talkButton.disabled = false;
+    talkButton.title = 'Hold to record a voice message';
+    talkButton.addEventListener('mousedown', startRecording);
+    talkButton.addEventListener('mouseup', stopRecording);
+    talkButton.addEventListener('mouseleave', stopRecording);
+    talkButton.addEventListener('touchstart', function (event) {
+      event.preventDefault();
+      startRecording();
+    });
+    talkButton.addEventListener('touchend', function (event) {
+      event.preventDefault();
+      stopRecording();
+    });
+  } else {
+    talkButton.title = 'Voice input is not supported in this browser';
+  }
 })();

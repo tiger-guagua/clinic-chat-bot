@@ -8,6 +8,7 @@ import { ConfigError, loadAIConfig, loadCalendarConfig, loadConfig } from './con
 import { ConversationService } from './conversation/ConversationService';
 import { ToolExecutor } from './conversation/ToolExecutor';
 import { createChatRouter } from './routes/chat';
+import { createTranscribeRouter } from './routes/transcribe';
 
 function main(): void {
   let config;
@@ -40,6 +41,7 @@ function main(): void {
   });
 
   app.use(createChatRouter(conversationService));
+  app.use(createTranscribeRouter(aiProvider));
 
   app.listen(config.port, () => {
     console.info(

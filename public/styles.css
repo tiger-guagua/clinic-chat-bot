@@ -96,3 +96,7 @@ body {
   background: #c9d1d9;
   cursor: not-allowed;
 }
+
+#talk-button.recording {
+  background: #b3261e;
+}
