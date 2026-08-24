@@ -8,6 +8,8 @@ const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
 const GRAPH_SCOPE = 'https://graph.microsoft.com/Calendars.ReadWrite offline_access';
 const TOKEN_EXPIRY_MARGIN_MS = 60_000;
 const PAGE_SIZE = 50;
+// A hung provider call must fail closed instead of freezing the chat turn.
+const REQUEST_TIMEOUT_MS = 10_000;
 
 export interface MicrosoftCredentials {
   clientId: string;
@@ -142,6 +144,7 @@ export class OutlookCalendarProvider implements CalendarProvider {
         Prefer: 'outlook.timezone="UTC"',
       },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {
@@ -168,6 +171,7 @@ export class OutlookCalendarProvider implements CalendarProvider {
         grant_type: 'refresh_token',
         scope: GRAPH_SCOPE,
       }).toString(),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {

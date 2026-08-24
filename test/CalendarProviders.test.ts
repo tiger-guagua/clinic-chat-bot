@@ -84,6 +84,26 @@ describe('GoogleCalendarProvider', () => {
     ).rejects.toThrow('missing the requested calendar');
   });
 
+  it('sends a timeout signal on every request so hung calls fail closed', async () => {
+    const { fetchFn, requests } = fakeFetch((url) =>
+      url.includes('oauth2.googleapis.com')
+        ? new Response(TOKEN_BODY, { status: 200 })
+        : jsonResponse({ calendars: { 'cal-1': { busy: [] } } }),
+    );
+
+    const provider = new GoogleCalendarProvider(CREDENTIALS, fetchFn);
+    await provider.getBusyIntervals({
+      calendarId: 'cal-1',
+      from: new Date('2026-09-02T01:00:00Z'),
+      to: new Date('2026-09-02T10:00:00Z'),
+    });
+
+    expect(requests.length).toBeGreaterThan(0);
+    for (const request of requests) {
+      expect(request.init.signal).toBeInstanceOf(AbortSignal);
+    }
+  });
+
   it('never leaks credentials in token refresh failures', async () => {
     const { fetchFn } = fakeFetch(
       () => new Response('error_description=secret refresh-token stuff', { status: 400 }),
@@ -196,6 +216,26 @@ describe('OutlookCalendarProvider', () => {
       timeZone: 'UTC',
     });
     expect(payload.showAs).toBe('busy');
+  });
+
+  it('sends a timeout signal on every request so hung calls fail closed', async () => {
+    const { fetchFn, requests } = fakeFetch((url) =>
+      url.includes('login.microsoftonline.com')
+        ? new Response(TOKEN_BODY, { status: 200 })
+        : jsonResponse({ value: [] }),
+    );
+
+    const provider = new OutlookCalendarProvider(CREDENTIALS, fetchFn);
+    await provider.getBusyIntervals({
+      calendarId: '',
+      from: new Date('2026-09-02T01:00:00Z'),
+      to: new Date('2026-09-02T10:00:00Z'),
+    });
+
+    expect(requests.length).toBeGreaterThan(0);
+    for (const request of requests) {
+      expect(request.init.signal).toBeInstanceOf(AbortSignal);
+    }
   });
 
   it('rejects non-UTC datetimes from Graph', async () => {

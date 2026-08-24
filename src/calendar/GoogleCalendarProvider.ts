@@ -4,6 +4,8 @@ import type { CalendarEvent, CalendarProvider } from './CalendarProvider';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const CALENDAR_API_BASE = 'https://www.googleapis.com/calendar/v3';
 const TOKEN_EXPIRY_MARGIN_MS = 60_000;
+// A hung provider call must fail closed instead of freezing the chat turn.
+const REQUEST_TIMEOUT_MS = 10_000;
 
 export interface GoogleCredentials {
   clientId: string;
@@ -103,6 +105,7 @@ export class GoogleCalendarProvider implements CalendarProvider {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {
@@ -128,6 +131,7 @@ export class GoogleCalendarProvider implements CalendarProvider {
         refresh_token: this.credentials.refreshToken,
         grant_type: 'refresh_token',
       }).toString(),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {
